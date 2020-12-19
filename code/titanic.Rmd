@@ -30,10 +30,6 @@ library(gridExtra)
 library(dplyr)
 ```
 
-# Carreguem els paquets R que utilitzarem
-library(ggplot2)
-library(dplyr)
-
 # 3. Neteja de les dades
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
