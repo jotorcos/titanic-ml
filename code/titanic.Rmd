@@ -28,6 +28,7 @@ library(knitr)
 library(ggplot2)
 library(gridExtra)
 library(dplyr)
+library(pander)
 ```
 
 # 3. Neteja de les dades
@@ -148,3 +149,222 @@ p2_box <- boxplot(totalData$Fare, main="Boxplot of Fare", col="gray")
 ```
 
 Com vegem tenim outliers tant en la variable Age com en Fare.
+
+#4. Anàlisi de dades
+
+Primerament grafiquem en un histograma la distribució de passatgers supervivents i dels que van morir.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+ggplot(train, aes(x = Survived)) +
+    geom_bar(stat = "count", aes(fill = Survived), col = "blue", alpha = 0.8) +
+    labs(x = "", y = "", title = "Número de supervivents") +
+    geom_label(stat = "count", aes(label = ..count..))
+```
+D'aquesta primera anàlisi en resulta que la majoria de passatgers no van sobreviure (549 survivors vs 342 baixes)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+ggplot(train, aes(Age)) +
+    geom_histogram() +
+    labs(x = "Edat", y = "Número de Passatgers", title = "Número de passatgers vs Edat")
+```
+De l'histograma anterior es desprén que la gran majoria dels passatgers tenien menys de 40 anys.Per tant, podem considerar que el passatge era eminentment jove.
+
+Quina relació hi va haver entre l'edat dels passatgers i la supervivència? 
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+ggplot(train) +
+  geom_freqpoly(mapping = aes(x = Age, color=Survived)) +
+  labs(x = "Edat", y = "Número de passatgers", title = "Comparativa de supervivència per edats")
+```
+En la gràfica s'aprecia que la supervivència sembla reduïr-se amb l'edat del passtager, cosa
+que a priori podia intuir-se. Per seguir analitzant aquesta relació, és interessant conèixer la distribució d'adults i menors entre els passatgers:
+
+```{r}
+totalData$AgeGroup[totalData$Age < 18] <- "Child"
+totalData$AgeGroup[totalData$Age >= 18] <- "Adult"
+agegroupCount <- totalData %>%
+    group_by(AgeGroup) %>%
+    count(AgeGroup) %>%
+    select(AgeGroup, Passengers = n)
+pandoc.table(agegroupCount)
+```
+
+```{r}
+ggplot(agegroupCount, aes(x = AgeGroup, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = AgeGroup), col = "black", alpha = 0.8) +
+    labs(x = "", y = "Número de passatgers", title = "Distribució per grups d'edat a bord") +
+    theme_classic()
+```
+Es veu clarament que només una petitat petitat part dels passatgers tenien menys de 18 anys.
+
+```{r}
+agegroupSurvived <- totalData %>%
+    group_by(AgeGroup) %>%
+    count(Survived) %>%
+    select(AgeGroup, Survived, Passengers = n)
+
+ggplot(agegroupSurvived, aes(x = AgeGroup, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = AgeGroup), col = "black", alpha = 0.8) +
+    labs(x = "", y = "", title = "Survival of Child vs Adult on board (0 = Died, 1 = Survived)") +
+    facet_wrap(~Survived) +
+    theme_bw()
+```
+Es veu en el diagrama anterior que la probabilitat de supervivència dels menors d'edat (més del 50%) és sensiblement superior a la dels adults (menys del 40%)
+
+Un altre factor d'anàlisi és la relació entre el preu del bitllet i la supervivència. Repetim l'anàlisi anterior substituint l'atribut Age per Fare:
+
+```{r}
+ggplot(train, aes(Fare)) +
+    geom_density() +
+    labs(x = "Fares", y = "Número de passatgers", title = "Número de passatgers vs Preu")
+```
+```{r}
+ggplot(train) +
+  geom_freqpoly(mapping = aes(x = Fare, color = Survived), binwidth = 0.05) +
+  scale_x_log10() +
+  labs(x = "Fares", y = "Número de passatgers", title = "Número de passatgers vs Fares")
+```
+S'aprecia que la majoria dels passatgers viatjaven amb bitllets econòmics.
+Agrupem ara per grups de preus:
+```{r}
+totalData$FareGroup <- cut(totalData$Fare, breaks = 3, labels = c("Low", "Medium", "High"))
+table(totalData$FareGroup)
+faregroupCount <- totalData %>%
+    group_by(FareGroup) %>%
+    count(FareGroup) %>%
+    select(FareGroup, Passengers = n)
+
+pandoc.table(faregroupCount)
+```
+```{r}
+ggplot(faregroupCount, aes(x = FareGroup, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = FareGroup), col = "black", alpha = 0.8) +
+    labs(x = "", y = "Número de passatgers", title = "Número de passatgers vs Grups de preus") +
+    theme_classic()
+```
+```{r}
+faregroupSurvived <- totalData %>%
+    group_by(FareGroup) %>%
+    count(Survived) %>%
+    select(FareGroup, Survived, Passengers = n)
+
+ggplot(faregroupSurvived, aes(x = FareGroup, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = FareGroup), col = "black", alpha = 0.8) +
+    labs(x = "", y = "", title = "Número de supervivents vs Nivell de tarifa (0 = Died, 1 = Survived)") +
+    facet_wrap(~Survived) +
+    theme_bw()
+```
+Es pot visualitzar en les gràfiques com les possibilitats de sobreviure augmentaven amb el preu del bitllet del passatger.
+
+Analitzem ara l'impacte de la classe sobre la supervivència:
+
+```{r}
+classCount <- train %>%
+    group_by(Pclass) %>%
+    count(Pclass) %>%
+    select(Pclass, Passengers = n)
+
+pandoc.table(classCount)
+```
+```{r}
+ggplot(classCount, aes(x = Pclass, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = Pclass), col = "black", alpha = 0.8) +
+    labs(x = "Passenger Class", y = "Número de Passatgers", title = "Número de Passatgers in each passenger class") +
+    theme_classic()
+```
+```{r}
+classSurvived <- train %>%
+    group_by(Pclass) %>%
+    count(Survived) %>%
+    filter(Survived == 1) %>%
+    select(Pclass, Passengers = n) 
+
+pandoc.table(classSurvived)
+```
+```{r}
+classSurvived <- train %>%
+    group_by(Pclass) %>%
+    count(Survived) %>%
+    select(Pclass, Survived, Passengers = n)
+
+ggplot(classSurvived, aes(x = Pclass, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = Pclass), col = "black", alpha = 0.8) +
+    labs(x = "", y = "Número de Passatgers", title = "Número de supervivents vs Classe del passatger (0 = Died, 1 = Survived)") +
+    facet_wrap(~Survived) +
+    theme_bw()
+```
+Com en l'anàlisi anterior, es veu que els passatgers que viatjaven en primera classe tenien una expectativa de sobreviure (aprox. 65%) superior als de segona classe (aprox. 50%) i molt més elevada que els de tercera classe (aprox. 25%).  
+
+Pel que fa a l'impacte del gènere del passatger en la seva expectativa de supervivència, repetim el mateix anàlisi usant el camp Sex:
+
+```{r}
+sexCount <- train %>%
+    group_by(Sex) %>%
+    count(Sex) %>%
+    select(Gender = Sex, Passengers = n)
+
+pandoc.table(sexCount)
+```
+
+D'entrada veiem que hi havia força més homes que dones.
+
+```{r}
+ggplot(sexCount, aes(x = Gender, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = Gender), col = "black", alpha = 0.8) +
+    labs(x = "Gender", y = "Número de Passatgers", title = "Número d'Homes vs Dones a bord") +
+    theme_classic()
+```
+```{r}
+sexSurvived <- train %>%
+    group_by(Sex) %>%
+    count(Survived) %>%
+    filter(Survived == 1) %>%
+    select(Gender = Sex, Passengers = n)
+
+pandoc.table(sexSurvived)
+```
+```{r}
+sexSurvived <- train %>%
+    group_by(Sex) %>%
+    count(Survived) %>%
+    select(Gender = Sex, Survived, Passengers = n)
+
+ggplot(sexSurvived, aes(x = Gender, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = Gender), col = "black", alpha = 0.8) +
+    labs(x = "", y = "Número de passatgers", title = "Homes vs Dones supervivència (0 = Died, 1 = Survived)") +
+    facet_wrap(~Survived) +
+    theme_bw()
+```
+En aquest cas es constata que la gran majoria de dones (al voltant del 75%) que viatjaven en el Titanic van sobreviure. En canvi, la gran majoria d'homes (aprx. 80%) passatgers NO van sobreviure.  
+
+Analitzem a continuació la relació entre el port d'embarcament i la supervivència dels passatgers:
+```{r}
+embarkedCount <- totalData %>%
+    group_by(Embarked) %>%
+    count(Embarked) %>%
+    select(Port = Embarked, Passengers = n)
+
+pandoc.table(embarkedCount)
+```
+
+```{r}
+ggplot(embarkedCount, aes(x = Port, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = Port), col = "black", alpha = 0.8) +
+    labs(x = "", y = "Número de passatgers", title = "Número de passatgers embarcats a cada port") +
+    theme_classic()
+```
+La gran majoria dels passatgers provenen del port de Southampton.
+
+```{r}
+embarkedSurvived <- totalData %>%
+    group_by(Embarked) %>%
+    count(Survived) %>%
+    select(Port = Embarked, Survived, Passengers = n)
+
+ggplot(embarkedSurvived, aes(x = Port, y = Passengers)) +
+    geom_bar(stat = "identity", aes(fill = Port), col = "black", alpha = 0.8) +
+    labs(x = "", y = "Número de Passatgers", title = "Número de Supervivents vs Port embarcament (0 = Died, 1 = Survived)") +
+    facet_wrap(~Survived) +
+    theme_bw()
+```
+Els passatgers embarcats a Cherbourg (C) tenen una probabilitat de supervivència superior (aprox. 55%) als provinents dels altres dos ports (Q, aprox. 40%; S, aprox.35%)
