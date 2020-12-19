@@ -19,3 +19,132 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r load_libraries, include=FALSE}
+library(knitr)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Carreguem els paquets R que utilitzarem
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+```
+
+# 3. Neteja de les dades
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Guardem el joc de dades test i train en un únic dataset
+test <- read.csv('../data/test.csv',stringsAsFactors = FALSE)
+train <- read.csv('../data/train.csv', stringsAsFactors = FALSE)
+
+# Unim els dos jocs de dades en un només
+totalData <- bind_rows(train,test)
+files=dim(train)[1]
+
+# Verifiquem l'estructura del joc de dades
+str(totalData)
+```
+
+Treballem els atributs amb valors buits.  
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Estadístiques de valors buits
+print('Valors buits:')
+print('NA')
+print(colSums(is.na(totalData)))
+print("")
+print(colSums(totalData==""))
+```
+
+Tenim valors buits en Survived, Age, Fare, Cabin i Embarked.
+
+En l'atribut Survived és normal que hi haja valors buits ja que hem unit el
+dataset de train amb test, i aquest últim no especifica la clase.
+
+En l'atribut Age sí que falten molts valors, imputarem el valor mitjà.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Prenem la mitjana per a valors buits de la variable "Age"
+totalData$Age[is.na(totalData$Age)] <- mean(totalData$Age, na.rm = T)
+```
+
+En Fare només falta 1, que resulta ser un passatger de 3a classe, així que
+podriem imputar el valor mitjà de la taxa dels passatgers de 3a classe.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Prenem la mitjana de la 3a classe per a valors buits de la variable "Fare"
+totalData$Fare[is.na(totalData$Fare)] <-
+  mean(totalData$Fare[totalData$Pclass == 3], na.rm = T)
+```
+
+En Embarked només falten 2, així que els imputarem per la moda.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+table(totalData$Embarked)
+```
+
+Prenem valor "S" per als valors buits de la variable "Embarked", que és la
+més comuna.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+totalData$Embarked[totalData$Embarked == ""] = "S"
+```
+
+En Cabin també falten però és un atribut que no ens interessa, perquè no
+considerem que aporte informació relevant.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+totalData$Cabin <- NULL
+head(totalData)
+```
+
+Discretitzem quan té sentit i en funció de cada variable.  
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Per a quines variables tindria sentit un procés de discretizació?
+apply(totalData,2, function(x) length(unique(x)))
+
+# Discretitzem les variables amb poques classes
+cols<-c("Survived","Pclass","Sex","Embarked")
+for (i in cols){
+  totalData[,i] <- as.factor(totalData[,i])
+}
+
+# Després dels canvis, analitzem la nova estructura del joc de dades
+str(totalData)
+```
+
+Visualitzem la distribució de les variables:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+
+plotDistribution = function (my_data, my_column_name) {
+  ggplot(my_data, aes_string(x = my_column_name)) +
+    geom_histogram(
+      aes(y = ..density..),
+      binwidth = .5,
+      colour = "black",
+      fill = "white"
+    ) +
+    geom_density(alpha = .2, fill = "#FF6666")
+}
+
+p1 <- ggplot(totalData, aes(x = Pclass)) + geom_bar()
+p2 <- ggplot(totalData, aes(x = Sex)) + geom_bar()
+p3 <- plotDistribution(totalData, 'Age')
+p4 <- ggplot(totalData, aes(x = SibSp)) + geom_bar()
+p5 <- ggplot(totalData, aes(x = Parch)) + geom_bar()
+p6 <- plotDistribution(totalData, 'Fare')
+p7 <- ggplot(totalData, aes(x = Embarked)) + geom_bar()
+
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, nrow = 3)
+```
+
+Les variables categòriques no tenen outliers, axí que representem els diagrames de caixes per a veure si hi ha valors atípics en les variables continues:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+p1_box <- boxplot(totalData$Age, main="Boxplot of Age", col="gray")
+p2_box <- boxplot(totalData$Fare, main="Boxplot of Fare", col="gray")
+```
+
+Com vegem tenim outliers tant en la variable Age com en Fare.
