@@ -2,7 +2,7 @@
 
 ## 1. Descripció del dataset
 
-Aquest dataset sobre els passatgers del Titanic està integrat pels conjunts d'entrenament i de prova disponibles a Kaggle.
+Aquest dataset sobre els passatgers del Titanic està integrat pels conjunts d'entrenament (891 registres) i de prova (418 registres) disponibles a Kaggle.
 Els 12 camps usats en el dataset són els següents: 
 
 * PassengerId: identificador numèric de cada passatger embarcat
