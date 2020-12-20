@@ -1,5 +1,5 @@
 ---
-title: 'Mineria de dades: PRAC2'
+title: 'Tipologia i cicle de vida de les dades: PRAC2'
 author: "Autor: Josep Tormo Costa i Oriol Bardés Robles"
 date: "Desembre 2020"
 output:
@@ -34,9 +34,13 @@ library(pander)
 # 3. Neteja de les dades
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Guardem el joc de dades test i train en un únic dataset
-test <- read.csv('../data/test.csv',stringsAsFactors = FALSE)
+# Carreguem els dos fitxers de train i test
 train <- read.csv('../data/train.csv', stringsAsFactors = FALSE)
+test <- read.csv('../data/test.csv',stringsAsFactors = FALSE)
+
+# Creem una nova columna identificadora per saber si la fila és de train o test.
+train$Set <- "Train"
+test$Set <- "Test"
 
 # Unim els dos jocs de dades en un només
 totalData <- bind_rows(train,test)
@@ -152,6 +156,13 @@ Com vegem tenim outliers tant en la variable Age com en Fare.
 
 #4. Anàlisi de dades
 
+Ara hem de tornar a dividir el dataset amb el joc de train i test original.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+train <- totalData[totalData$Set == "Train", ]
+test <- totalData[totalData$Set == "Test", ]
+```
+
 Primerament grafiquem en un histograma la distribució de passatgers supervivents i dels que van morir.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -180,9 +191,9 @@ En la gràfica s'aprecia que la supervivència sembla reduïr-se amb l'edat del 
 que a priori podia intuir-se. Per seguir analitzant aquesta relació, és interessant conèixer la distribució d'adults i menors entre els passatgers:
 
 ```{r}
-totalData$AgeGroup[totalData$Age < 18] <- "Child"
-totalData$AgeGroup[totalData$Age >= 18] <- "Adult"
-agegroupCount <- totalData %>%
+train$AgeGroup[train$Age < 18] <- "Child"
+train$AgeGroup[train$Age >= 18] <- "Adult"
+agegroupCount <- train %>%
     group_by(AgeGroup) %>%
     count(AgeGroup) %>%
     select(AgeGroup, Passengers = n)
@@ -198,7 +209,7 @@ ggplot(agegroupCount, aes(x = AgeGroup, y = Passengers)) +
 Es veu clarament que només una petitat petitat part dels passatgers tenien menys de 18 anys.
 
 ```{r}
-agegroupSurvived <- totalData %>%
+agegroupSurvived <- train %>%
     group_by(AgeGroup) %>%
     count(Survived) %>%
     select(AgeGroup, Survived, Passengers = n)
@@ -227,9 +238,9 @@ ggplot(train) +
 S'aprecia que la majoria dels passatgers viatjaven amb bitllets econòmics.
 Agrupem ara per grups de preus:
 ```{r}
-totalData$FareGroup <- cut(totalData$Fare, breaks = 3, labels = c("Low", "Medium", "High"))
-table(totalData$FareGroup)
-faregroupCount <- totalData %>%
+train$FareGroup <- cut(train$Fare, breaks = 3, labels = c("Low", "Medium", "High"))
+table(train$FareGroup)
+faregroupCount <- train %>%
     group_by(FareGroup) %>%
     count(FareGroup) %>%
     select(FareGroup, Passengers = n)
@@ -243,7 +254,7 @@ ggplot(faregroupCount, aes(x = FareGroup, y = Passengers)) +
     theme_classic()
 ```
 ```{r}
-faregroupSurvived <- totalData %>%
+faregroupSurvived <- train %>%
     group_by(FareGroup) %>%
     count(Survived) %>%
     select(FareGroup, Survived, Passengers = n)
@@ -339,7 +350,7 @@ En aquest cas es constata que la gran majoria de dones (al voltant del 75%) que 
 
 Analitzem a continuació la relació entre el port d'embarcament i la supervivència dels passatgers:
 ```{r}
-embarkedCount <- totalData %>%
+embarkedCount <- train %>%
     group_by(Embarked) %>%
     count(Embarked) %>%
     select(Port = Embarked, Passengers = n)
@@ -356,7 +367,7 @@ ggplot(embarkedCount, aes(x = Port, y = Passengers)) +
 La gran majoria dels passatgers provenen del port de Southampton.
 
 ```{r}
-embarkedSurvived <- totalData %>%
+embarkedSurvived <- train %>%
     group_by(Embarked) %>%
     count(Survived) %>%
     select(Port = Embarked, Survived, Passengers = n)
