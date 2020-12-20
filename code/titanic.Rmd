@@ -1,6 +1,6 @@
 ---
 title: 'Tipologia i cicle de vida de les dades: PRAC2'
-author: "Autor: Josep Tormo Costa i Oriol Bardés Robles"
+author: "Autor: Josep Tormo Costa i Oriol Bardés Robles - https://github.com/jotorcos/titanic-ml"
 date: "Desembre 2020"
 output:
   pdf_document:
@@ -16,7 +16,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
 ```
 
 ```{r load_libraries, include=FALSE}
@@ -30,6 +30,35 @@ library(gridExtra)
 library(dplyr)
 library(pander)
 ```
+
+# URL de github amb el codi de la pràctica
+
+https://github.com/jotorcos/titanic-ml
+
+- Josep Tormo Costa: jtorcos
+- Oriol Bardés Robles: obr-uoc
+
+# Descripció del dataset.
+
+dataset sobre els passatgers del Titanic està integrat pels conjunts d'entrenament (891 registres) i de prova (418 registres) disponibles a Kaggle:
+
+https://www.kaggle.com/c/titanic/data
+
+Els 12 camps usats en el dataset són els següents:
+
+•	PassengerId: identificador numèric de cada passatger embarcat
+•	Survived: Indica si el passatger va sobreviure o va morir (1 = Survived, 0 = Died)
+•	Pclass: Indica el tipus de ticket (1 = Primera classe, 2 = Segona classe, 3 = Tercera classe)
+•	Name: Nom complet del passatger
+•	Sex: Gènere del passatger (Male/Female)
+•	Age: Edat del passatger
+•	SibSp: Número de germans/cònjuges a bord entre els passatgers
+•	Parch: Número de pares/fills a bord entre els passatgers
+•	Ticket: Número de ticket del passatger
+•	Fare: Preu del ticket del passatger
+•	Cabin: Número de la cabina assignada al passatger
+•	Embarked: Port on el passatger ha embarcat (C = Cherbourg, Q = Queenstown, S = Southampton)
+
 
 # Integració, selecció i neteja de les dades.
 
