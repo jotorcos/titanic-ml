@@ -2,7 +2,10 @@
 
 ## 1. Descripció del dataset
 
-Aquest dataset sobre els passatgers del Titanic està integrat pels conjunts d'entrenament (891 registres) i de prova (418 registres) disponibles a Kaggle.
+Aquest dataset sobre els passatgers del Titanic està integrat pels conjunts d'entrenament (891 registres) i de prova (418 registres) disponibles a Kaggle:
+
+https://www.kaggle.com/c/titanic/data
+
 Els 12 camps usats en el dataset són els següents: 
 
 * PassengerId: identificador numèric de cada passatger embarcat
@@ -20,3 +23,19 @@ Els 12 camps usats en el dataset són els següents:
 
 L'objectiu d'aquesta anàlisi és desenvolupar un model per predir la supervivència de cadascun dels passatgers del Titanic.
 Per tant, el conjunt de test no disposa de la variable Survived.
+
+## 2. Integració i selecció de les dades d'interés
+
+D'entrada es consideraran tots els atributs presents en els conjunts d'entrenament i de prova. Naturalmnet, el conjunt d'entrenament serà usat per a construir el model predictiu 
+de la supervivència i el conjunt de prova serà usat per a validar-lo.
+
+Analitzarem en particular la relació dels següents paràmetres en la supervivència dels passatgers:
+
+* Gènere del passatger
+* Preu del bitllet
+* Classe del bitllet
+* Edat del passatger
+* Port d'embarcament
+
+Per tant, treballarem tots els camps i registres disponibles en el dataset en la secció corresponent a l'anàlisi de dades, on analitzarem la seva estructura i treballarem 
+els valors buits existents en funció del camp. Fruit d'aquesta anàlisi, descartarem el camp de "Cabin" per considerar que no aporta informació relevant al treball. 
