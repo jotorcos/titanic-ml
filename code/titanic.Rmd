@@ -532,6 +532,15 @@ prediction <- predict(rfModel, newdata = test)
 
 titanicPrediction <-
   data.frame(PassengerId = test$PassengerId, Survived = prediction)
-write.csv(titanicPrediction, file = "TitanicPrediction.csv", row.names = FALSE)
+write.csv(titanicPrediction, file = "../data/prediction.csv", row.names = FALSE)
 ```
 
+<br>
+
+ **Contribucions** |  **Firma** | 
+----------------------| ----------------------|
+*Investigació prèvia* | Josep Tormo Costa i Oriol Bardés Robles
+*Redacció de les respostes* | Josep Tormo Costa i Oriol Bardés Robles
+*Desenvolupament codi* | Josep Tormo Costa i Oriol Bardés Robles
+
+<br>
