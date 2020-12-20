@@ -10,6 +10,8 @@ La pràctica ha sigut realitzada per Josep Tormo Costa i Oriol Bardés Robles.
 data/train.csv: fitxer original de training.
 data/test.csv: fitxer original de test.
 code/titanic.Rmd: programa principal. 
+code/titanic.html: document html del programa principal.
+code/titanic.pdf: document pdf del programa principal.
 data/predictions.csv: fitxer csv amb les prediccions resultants.
 
 ## 1. Descripció del dataset
