@@ -31,7 +31,7 @@ library(dplyr)
 library(pander)
 ```
 
-# 3. Neteja de les dades
+# Integració, selecció i neteja de les dades.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Carreguem els dos fitxers de train i test
@@ -172,7 +172,7 @@ table(totalData$FareGroup)
 ```
 
 
-#4. Anàlisi de dades
+# Anàlisi de dades
 
 Ara hem de tornar a dividir el dataset amb el joc de train i test original.
 
@@ -294,7 +294,7 @@ pandoc.table(classCount)
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(classCount, aes(x = Pclass, y = Passengers)) +
     geom_bar(stat = "identity", aes(fill = Pclass), col = "black", alpha = 0.8) +
-    labs(x = "Passenger Class", y = "Número de Passatgers", title = "Número de Passatgers in each passenger class") +
+    labs(x = "Passenger Class", y = "Número de Passatgers", title = "Número de Passatgers in cada classe") +
     theme_classic()
 ```
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -394,6 +394,45 @@ ggplot(embarkedSurvived, aes(x = Port, y = Passengers)) +
 ```
 Els passatgers embarcats a Cherbourg (C) tenen una probabilitat de supervivència superior (aprox. 55%) als provinents dels altres dos ports (Q, aprox. 40%; S, aprox.35%)
 
+
+Ara podem provar la hipòtesi de que els supervivents eren més joves que els que
+van morir.
+
+
+### Hipòtesi nul·la i alternativa
+
+\[
+H_{0}: p_{1} = p_2
+\]
+
+\[
+H_{1}: p_{1} > p_2
+\]
+
+Siguent $p_{1}$ la proporció de dones supervivents i $p_{2}$ la proporció
+d'homes supervivents.
+
+```{r chunck5}
+x1 <- train$Sex[train$Sex == 'female' & train$Survived == 1]
+x2 <- train$Sex[train$Sex == 'male' & train$Survived == 1]
+
+n1 <- length(x1)
+n2 <- length(x2)
+
+p1 <- n1 / (n1 + n2)
+p2 <- n2 / (n1 + n2)
+
+p <- (n1*p1 + n2*p2) / (n1+n2)
+
+success <- c( p1*n1, p2*n2)
+nn <- c(n1,n2)
+
+prop.test(success, nn, alternative="greater", correct=FALSE)
+```
+
+Com el p-value és inferior a 0.05 podem rebutjar la hipòtesi nul·la i concloure
+com ja esperavem que la proporció de dones supervivents és major que la d'homes.
+
 # Predicció
 
 Després d'explorar les dades, anem a intentar construïr un model de predicció.
@@ -431,6 +470,30 @@ accuracy
 ```
 
 Obtenim un 80% d'acert en la predicció.
+
+Si mirem la importància de cadascuna de les variables:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Obtenim la importància
+importance    <- importance(rfModel)
+varImportance <- data.frame(Variables = row.names(importance), 
+                            Importance = round(importance[ ,'MeanDecreaseGini'],2))
+
+# Creem una variable de rang basada en la importància
+rankImportance <- varImportance %>%
+  mutate(Rank = paste0('#',dense_rank(desc(Importance))))
+
+# Utilitzem ggplo2 per a visualitzar la importància relativa de les variables
+ggplot(rankImportance, aes(x = reorder(Variables, Importance), 
+    y = Importance, fill = Importance)) +
+  geom_bar(stat='identity') + 
+  geom_text(aes(x = Variables, y = 0.5, label = Rank),
+    hjust=0, vjust=0.55, size = 4, colour = 'red') +
+  labs(x = 'Variables') +
+  coord_flip()
+```
+
+Com vegem el sexe de la persona té més influència que la classe!
 
 Ara podem utilitzar aquest model per a fer la predicció sobre les dades originals
 de test i guardar el resultat a un fitxer csv:
