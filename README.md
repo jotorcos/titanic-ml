@@ -1,4 +1,16 @@
-# titanic-ml
+# Benvingut a titanic-ml
+
+## Descripció
+Aquesta pràctica s'ha realitzat per a l'assignatura de Tipologia i cicle de vida de les dades, del Màster en Ciència de Dades de la Universitat Oberta de Catalunya. Es fa ús de tècniques de machine learning sobre el dataset del titanic.
+
+## Membres de l'equip
+La pràctica ha sigut realitzada per Josep Tormo Costa i Oriol Bardés Robles.
+
+## Fitxers
+data/train.csv: fitxer original de training.
+data/test.csv: fitxer original de test.
+code/titanic.Rmd: programa principal. 
+data/predictions.csv: fitxer csv amb les prediccions resultants.
 
 ## 1. Descripció del dataset
 
