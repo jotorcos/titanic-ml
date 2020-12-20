@@ -3,16 +3,16 @@ title: 'Tipologia i cicle de vida de les dades: PRAC2'
 author: "Autor: Josep Tormo Costa i Oriol Bardés Robles"
 date: "Desembre 2020"
 output:
+  pdf_document:
+    highlight: zenburn
+    toc: yes
+  word_document: default
   html_document:
     highlight: default
     number_sections: yes
     theme: cosmo
     toc: yes
     toc_depth: 2
-  word_document: default
-  pdf_document:
-    highlight: zenburn
-    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -152,7 +152,25 @@ p1_box <- boxplot(totalData$Age, main="Boxplot of Age", col="gray")
 p2_box <- boxplot(totalData$Fare, main="Boxplot of Fare", col="gray")
 ```
 
-Com vegem tenim outliers tant en la variable Age com en Fare.
+Com veiem tenim outliers tant en la variable Age com en Fare.
+
+Per una part, dividirem Age en dos categories: Child i Adult.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+totalData$AgeGroup[totalData$Age < 18] <- "Child"
+totalData$AgeGroup[totalData$Age >= 18] <- "Adult"
+totalData$AgeGroup <- as.factor(totalData$AgeGroup)
+```
+
+
+I dividirem Fare en tres categories: Low, Medium, High.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+totalData$FareGroup <- cut(totalData$Fare, breaks = 3, labels = c("Low", "Medium", "High"))
+totalData$FareGroup <- as.factor(totalData$FareGroup)
+table(totalData$FareGroup)
+```
+
 
 #4. Anàlisi de dades
 
@@ -190,9 +208,7 @@ ggplot(train) +
 En la gràfica s'aprecia que la supervivència sembla reduïr-se amb l'edat del passtager, cosa
 que a priori podia intuir-se. Per seguir analitzant aquesta relació, és interessant conèixer la distribució d'adults i menors entre els passatgers:
 
-```{r}
-train$AgeGroup[train$Age < 18] <- "Child"
-train$AgeGroup[train$Age >= 18] <- "Adult"
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 agegroupCount <- train %>%
     group_by(AgeGroup) %>%
     count(AgeGroup) %>%
@@ -200,7 +216,7 @@ agegroupCount <- train %>%
 pandoc.table(agegroupCount)
 ```
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(agegroupCount, aes(x = AgeGroup, y = Passengers)) +
     geom_bar(stat = "identity", aes(fill = AgeGroup), col = "black", alpha = 0.8) +
     labs(x = "", y = "Número de passatgers", title = "Distribució per grups d'edat a bord") +
@@ -208,7 +224,7 @@ ggplot(agegroupCount, aes(x = AgeGroup, y = Passengers)) +
 ```
 Es veu clarament que només una petitat petitat part dels passatgers tenien menys de 18 anys.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 agegroupSurvived <- train %>%
     group_by(AgeGroup) %>%
     count(Survived) %>%
@@ -224,12 +240,12 @@ Es veu en el diagrama anterior que la probabilitat de supervivència dels menors
 
 Un altre factor d'anàlisi és la relació entre el preu del bitllet i la supervivència. Repetim l'anàlisi anterior substituint l'atribut Age per Fare:
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(train, aes(Fare)) +
     geom_density() +
     labs(x = "Fares", y = "Número de passatgers", title = "Número de passatgers vs Preu")
 ```
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(train) +
   geom_freqpoly(mapping = aes(x = Fare, color = Survived), binwidth = 0.05) +
   scale_x_log10() +
@@ -237,9 +253,7 @@ ggplot(train) +
 ```
 S'aprecia que la majoria dels passatgers viatjaven amb bitllets econòmics.
 Agrupem ara per grups de preus:
-```{r}
-train$FareGroup <- cut(train$Fare, breaks = 3, labels = c("Low", "Medium", "High"))
-table(train$FareGroup)
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 faregroupCount <- train %>%
     group_by(FareGroup) %>%
     count(FareGroup) %>%
@@ -247,13 +261,13 @@ faregroupCount <- train %>%
 
 pandoc.table(faregroupCount)
 ```
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(faregroupCount, aes(x = FareGroup, y = Passengers)) +
     geom_bar(stat = "identity", aes(fill = FareGroup), col = "black", alpha = 0.8) +
     labs(x = "", y = "Número de passatgers", title = "Número de passatgers vs Grups de preus") +
     theme_classic()
 ```
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 faregroupSurvived <- train %>%
     group_by(FareGroup) %>%
     count(Survived) %>%
@@ -269,7 +283,7 @@ Es pot visualitzar en les gràfiques com les possibilitats de sobreviure augment
 
 Analitzem ara l'impacte de la classe sobre la supervivència:
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 classCount <- train %>%
     group_by(Pclass) %>%
     count(Pclass) %>%
@@ -277,13 +291,13 @@ classCount <- train %>%
 
 pandoc.table(classCount)
 ```
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(classCount, aes(x = Pclass, y = Passengers)) +
     geom_bar(stat = "identity", aes(fill = Pclass), col = "black", alpha = 0.8) +
     labs(x = "Passenger Class", y = "Número de Passatgers", title = "Número de Passatgers in each passenger class") +
     theme_classic()
 ```
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 classSurvived <- train %>%
     group_by(Pclass) %>%
     count(Survived) %>%
@@ -308,7 +322,7 @@ Com en l'anàlisi anterior, es veu que els passatgers que viatjaven en primera c
 
 Pel que fa a l'impacte del gènere del passatger en la seva expectativa de supervivència, repetim el mateix anàlisi usant el camp Sex:
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 sexCount <- train %>%
     group_by(Sex) %>%
     count(Sex) %>%
@@ -319,13 +333,13 @@ pandoc.table(sexCount)
 
 D'entrada veiem que hi havia força més homes que dones.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(sexCount, aes(x = Gender, y = Passengers)) +
     geom_bar(stat = "identity", aes(fill = Gender), col = "black", alpha = 0.8) +
     labs(x = "Gender", y = "Número de Passatgers", title = "Número d'Homes vs Dones a bord") +
     theme_classic()
 ```
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 sexSurvived <- train %>%
     group_by(Sex) %>%
     count(Survived) %>%
@@ -334,7 +348,7 @@ sexSurvived <- train %>%
 
 pandoc.table(sexSurvived)
 ```
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 sexSurvived <- train %>%
     group_by(Sex) %>%
     count(Survived) %>%
@@ -349,7 +363,7 @@ ggplot(sexSurvived, aes(x = Gender, y = Passengers)) +
 En aquest cas es constata que la gran majoria de dones (al voltant del 75%) que viatjaven en el Titanic van sobreviure. En canvi, la gran majoria d'homes (aprx. 80%) passatgers NO van sobreviure.  
 
 Analitzem a continuació la relació entre el port d'embarcament i la supervivència dels passatgers:
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 embarkedCount <- train %>%
     group_by(Embarked) %>%
     count(Embarked) %>%
@@ -358,7 +372,7 @@ embarkedCount <- train %>%
 pandoc.table(embarkedCount)
 ```
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(embarkedCount, aes(x = Port, y = Passengers)) +
     geom_bar(stat = "identity", aes(fill = Port), col = "black", alpha = 0.8) +
     labs(x = "", y = "Número de passatgers", title = "Número de passatgers embarcats a cada port") +
@@ -366,7 +380,7 @@ ggplot(embarkedCount, aes(x = Port, y = Passengers)) +
 ```
 La gran majoria dels passatgers provenen del port de Southampton.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 embarkedSurvived <- train %>%
     group_by(Embarked) %>%
     count(Survived) %>%
@@ -379,3 +393,53 @@ ggplot(embarkedSurvived, aes(x = Port, y = Passengers)) +
     theme_bw()
 ```
 Els passatgers embarcats a Cherbourg (C) tenen una probabilitat de supervivència superior (aprox. 55%) als provinents dels altres dos ports (Q, aprox. 40%; S, aprox.35%)
+
+# Predicció
+
+Després d'explorar les dades, anem a intentar construïr un model de predicció.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(caret)
+library(randomForest)
+```
+
+Dividim les dades de train en 70% training i 30% test:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(1995)
+inTrain <- createDataPartition(train$Survived, p = 0.7, list = FALSE)
+training <- train[inTrain, ]
+testing <- train[-inTrain, ]
+```
+
+Construïm el model utilitzant un Random Forest:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(1995)
+rfModel <-
+  randomForest(Survived ~ Pclass + Sex + AgeGroup + FareGroup + Embarked, data = training)
+rfPred <- predict(rfModel, newdata = testing)
+rfCM <- confusionMatrix(rfPred, testing$Survived)
+rfCM$table
+```
+
+Mirem el percentatge d'acert en la predicció:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+accuracy <- rfCM$overall[1]
+accuracy
+```
+
+Obtenim un 80% d'acert en la predicció.
+
+Ara podem utilitzar aquest model per a fer la predicció sobre les dades originals
+de test i guardar el resultat a un fitxer csv:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+prediction <- predict(rfModel, newdata = test)
+
+titanicPrediction <-
+  data.frame(PassengerId = test$PassengerId, Survived = prediction)
+write.csv(titanicPrediction, file = "TitanicPrediction.csv", row.names = FALSE)
+```
+
