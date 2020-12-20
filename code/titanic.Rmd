@@ -35,12 +35,12 @@ library(pander)
 
 https://github.com/jotorcos/titanic-ml
 
-- Josep Tormo Costa: jtorcos
+- Josep Tormo Costa: jotorcos
 - Oriol Bardés Robles: obr-uoc
 
 # Descripció del dataset.
 
-dataset sobre els passatgers del Titanic està integrat pels conjunts d'entrenament (891 registres) i de prova (418 registres) disponibles a Kaggle:
+Dataset sobre els passatgers del Titanic està integrat pels conjunts d'entrenament (891 registres) i de prova (418 registres) disponibles a Kaggle:
 
 https://www.kaggle.com/c/titanic/data
 
