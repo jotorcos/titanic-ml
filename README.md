@@ -26,7 +26,7 @@ Per tant, el conjunt de test no disposa de la variable Survived.
 
 ## 2. Integració i selecció de les dades d'interés
 
-D'entrada es consideraran tots els atributs presents en els conjunts d'entrenament i de prova. Naturalmnet, el conjunt d'enternament serà usat per a construir el model predictiu 
+D'entrada es consideraran tots els atributs presents en els conjunts d'entrenament i de prova. Naturalmnet, el conjunt d'entrenament serà usat per a construir el model predictiu 
 de la supervivència i el conjunt de prova serà usat per a validar-lo.
 
 Analitzarem en particular la relació dels següents paràmetres en la supervivència dels passatgers:
